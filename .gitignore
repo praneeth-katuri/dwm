@@ -1,0 +1,6 @@
+dwm 
+config.h 
+*.o
+*.orig
+*.rej
+.ccls-cache/
