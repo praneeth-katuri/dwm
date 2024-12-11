@@ -72,11 +72,11 @@ jobs:
       - name: Upload package to GitHub release
         run: |
           # Check if the package exists before attempting upload
-          if [ -f "/workspace/dwm-*.pkg.tar.zst" ]; then
+          if [-f "/workspace/dwm-${{ env.VERSION }}-${{ env.RELEASE }}-x86_64.pkg.tar.zst" ]; then
             curl -X POST \
               -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
               -H "Content-Type: application/octet-stream" \
-              --data-binary @/workspace/dwm-*.pkg.tar.zst \
+              --data-binary @/workspace/dwm-${{ env.VERSION }}-${{ env.RELEASE }}-x86_64.pkg.tar.zst \
               "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
           else
             echo "Package file not found!"
