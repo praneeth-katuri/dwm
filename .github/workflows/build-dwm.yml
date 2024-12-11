@@ -33,7 +33,7 @@ jobs:
             pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild &&
+              makepkg --syncdeps --noconfirm --cleanbuild && pwd &&
               ls -lh /workspace
             '
           "
@@ -72,7 +72,8 @@ jobs:
       - name: Upload package to GitHub release
         run: |
           # Check if the package exists before attempting upload
-          if [  -f "/workspace/dwm-6.5-1-x86_64.pkg.tar.zst" ]; then
+          PACKAGE_FILE=$(find /workspace -name "dwm-*.pkg.tar.zst" -print -quit)
+          if [ -n "$PACKAGE_FILE" ]; then
             curl -X POST \
               -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
               -H "Content-Type: application/octet-stream" \
