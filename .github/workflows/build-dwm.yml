@@ -51,7 +51,7 @@ jobs:
         id: create_release
         run: |
           VERSION=${{ env.VERSION }}-${{ env.RELEASE }}
-          gh release create "v$VERSION" "${GITHUB_WORKSPACE}/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
+          gh release create "v$VERSION" "*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authenticate GitHub CLI with the workflow token
 
