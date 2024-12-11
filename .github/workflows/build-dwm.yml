@@ -55,6 +55,7 @@ jobs:
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
+            git fetch --tags
             git tag -d "$EXISTING_RELEASE"
             git push --delete origin "$EXISTING_RELEASE"
           else
