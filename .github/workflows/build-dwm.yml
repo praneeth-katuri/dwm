@@ -56,19 +56,29 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/releases/${{ env.EXISTING_RELEASE_ID }}"
 
       - name: Create a New Release
+        id: create_release
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
-          curl -X POST \
+          RESPONSE=$(curl -X POST \
             -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"tag_name": "'"${VERSION_TAG}"'", "name": "'"${VERSION_TAG}"'", "body": "Release for DWM ${VERSION_TAG}"}' \
-            https://api.github.com/repos/${{ github.repository }}/releases
+            https://api.github.com/repos/${{ github.repository }}/releases)
+          echo "Release response: $RESPONSE"
+          RELEASE_ID=$(echo $RESPONSE | jq '.id')
+          echo "Release ID: $RELEASE_ID"
+          echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
 
       - name: Upload package to GitHub release
         run: |
-          # Upload the package artifact (tar.zst file)
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary @/workspace/*.pkg.tar.zst \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
+          # Check if the package exists before attempting upload
+          if [ -f "/workspace/dwm-*.pkg.tar.zst" ]; then
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @/workspace/dwm-*.pkg.tar.zst \
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
+          else
+            echo "Package file not found!"
+            exit 1
+          fi
