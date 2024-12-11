@@ -5,9 +5,6 @@ on:
     branches:
       - main
   pull_request:
-  # Trigger on new version tags too
-  tags:
-    - "v*"  # Adjust this if your versioning follows a different scheme (e.g., v1.0.0)
 
 jobs:
   build:
@@ -50,36 +47,8 @@ jobs:
             '
           "
 
-      - name: Prepare directory for artifact upload
-        run: |
-          mkdir -p build_artifacts
-          mv *.pkg.tar.zst build_artifacts/  # Move the generated package to the directory
-
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
           name: dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}  # Dynamic version and release from environment variables
-          path: build_artifacts/
-
-      - name: Create GitHub release
-        uses: gh-actions/create-release@v1
-        with:
-          tag_name: v${{ env.VERSION }}-${{ env.RELEASE }}
-          release_name: "DWM v${{ env.VERSION }}-${{ env.RELEASE }} Release"
-          body: |
-            DWM version: ${{ env.VERSION }}-${{ env.RELEASE }}
-            New release of the DWM package.
-          files: |
-            build_artifacts/*.pkg.tar.zst
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Cleanup old releases
-        run: |
-          # List all releases and delete releases older than the current one
-          releases=$(gh release list --limit 100 --json name,createdAt --jq '.[] | select(.createdAt < "$(date --date="1 week ago" --utc +%Y-%m-%dT%H:%M:%SZ")") | .name')
-          for release in $releases; do
-            gh release delete "$release" --yes
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          path: ${{ github.workspace }}/*.pkg.tar.zst  # Ensure the exact file is uploaded
