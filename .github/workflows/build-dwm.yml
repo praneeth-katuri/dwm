@@ -1,91 +1,85 @@
-name: Build and Release DWM Package
+name: Build DWM Package
 
 on:
   push:
     branches:
       - main
+  pull_request:
+  # Trigger on new version tags too
+  tags:
+    - "v*"  # Adjust this if your versioning follows a different scheme (e.g., v1.0.0)
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04  # You can change this based on your needs
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch full history to avoid shallow clone issues
 
       - name: Get DWM Version and Release
         id: get_version
         run: |
           VERSION=$(grep 'pkgver=' PKGBUILD | cut -d'=' -f2)
-          RELEASE=$(grep 'pkgrel=' PKGBUILD | cut -d'=' -f2)
-          echo "DWM version is $VERSION, release is $RELEASE"
+          REL=$(grep 'pkgrel=' PKGBUILD | cut -d'=' -f2)
+          echo "DWM version is $VERSION, release is $REL"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+          echo "RELEASE=$REL" >> $GITHUB_ENV
 
       - name: Build DWM package in Arch Linux
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace archlinux:base-devel bash -c "
+            # Create a non-root user
             useradd -m builder &&
             passwd -d builder &&
             echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers &&
+            
+            # Fix permissions to allow builder user to write to /workspace
             chown -R builder:builder /workspace &&
+            
+            # Update system as root
             pacman -Syu --noconfirm &&
             pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
+            
+            # Build the package as a non-root user
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild &&
-              ls -lh /workspace
+              makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
 
-      - name: Save build artifact to workspace
+      - name: Prepare directory for artifact upload
         run: |
-          # Move the package file to a consistent location
-          mv /workspace/dwm-*.pkg.tar.zst $GITHUB_WORKSPACE/dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst
-        # The package is now available in GITHUB_WORKSPACE for later steps
+          mkdir -p build_artifacts
+          mv *.pkg.tar.zst build_artifacts/  # Move the generated package to the directory
 
-      - name: Get Existing Release (if any)
-        id: existing_release
-        run: |
-          RELEASES=$(curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases)
-          echo "Existing releases: $RELEASES"
-          EXISTING_RELEASE_ID=$(echo $RELEASES | jq '.[0].id')
-          echo "Existing release ID: $EXISTING_RELEASE_ID"
-          echo "EXISTING_RELEASE_ID=$EXISTING_RELEASE_ID" >> $GITHUB_ENV
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}  # Dynamic version and release from environment variables
+          path: build_artifacts/
 
-      - name: Delete Old Release if Exists
-        if: ${{ env.EXISTING_RELEASE_ID != 'null' && env.EXISTING_RELEASE_ID != '' }}
-        run: |
-          curl -X DELETE \
-            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/${{ env.EXISTING_RELEASE_ID }}"
+      - name: Create GitHub release
+        uses: gh-actions/create-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}-${{ env.RELEASE }}
+          release_name: "DWM v${{ env.VERSION }}-${{ env.RELEASE }} Release"
+          body: |
+            DWM version: ${{ env.VERSION }}-${{ env.RELEASE }}
+            New release of the DWM package.
+          files: |
+            build_artifacts/*.pkg.tar.zst
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Create a New Release
-        id: create_release
+      - name: Cleanup old releases
         run: |
-          VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
-          RESPONSE=$(curl -X POST \
-            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"tag_name": "'"${VERSION_TAG}"'", "name": "'"${VERSION_TAG}"'", "body": "Release for DWM ${VERSION_TAG}"}' \
-            https://api.github.com/repos/${{ github.repository }}/releases)
-          echo "Release response: $RESPONSE"
-          RELEASE_ID=$(echo $RESPONSE | jq '.id')
-          echo "Release ID: $RELEASE_ID"
-          echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
-
-      - name: Upload package to GitHub release
-        run: |
-          # Check if the package exists before attempting upload
-          PACKAGE_FILE="$GITHUB_WORKSPACE/dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
-          if [ -f "$PACKAGE_FILE" ]; then
-            curl -X POST \
-              -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$PACKAGE_FILE" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=$(basename $PACKAGE_FILE)"
-          else
-            echo "Package file not found!"
-            exit 1
-          fi
+          # List all releases and delete releases older than the current one
+          releases=$(gh release list --limit 100 --json name,createdAt --jq '.[] | select(.createdAt < "$(date --date="1 week ago" --utc +%Y-%m-%dT%H:%M:%SZ")") | .name')
+          for release in $releases; do
+            gh release delete "$release" --yes
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
