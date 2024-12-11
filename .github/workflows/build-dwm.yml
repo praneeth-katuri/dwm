@@ -41,7 +41,7 @@ jobs:
       - name: Get Existing Release (if any)
         id: existing_release
         run: |
-          RELEASES=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          RELEASES=$(curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/releases)
           echo "Existing releases: $RELEASES"
           EXISTING_RELEASE_ID=$(echo $RELEASES | jq '.[0].id')
@@ -52,7 +52,7 @@ jobs:
         if: ${{ env.EXISTING_RELEASE_ID != 'null' && env.EXISTING_RELEASE_ID != '' }}
         run: |
           curl -X DELETE \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/releases/${{ env.EXISTING_RELEASE_ID }}"
 
       - name: Create a New Release
