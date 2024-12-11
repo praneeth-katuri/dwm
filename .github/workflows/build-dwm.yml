@@ -17,13 +17,18 @@ jobs:
       - name: Build DWM package in Arch Linux
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace archlinux:base-devel bash -c "
+            # Create a non-root user
             useradd -m builder &&
             passwd -d builder &&
             echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers &&
+            
+            # Update system as root
+            pacman -Syu --noconfirm &&
+            pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
+            
+            # Build the package as a non-root user
             sudo -u builder bash -c '
               cd /workspace &&
-              pacman -Syu --noconfirm &&
-              pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
               makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
@@ -33,3 +38,4 @@ jobs:
         with:
           name: dwm-package
           path: '*.pkg.tar.zst'
+
