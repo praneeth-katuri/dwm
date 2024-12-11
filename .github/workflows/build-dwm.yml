@@ -24,11 +24,15 @@ jobs:
 
       - name: Clean up Git configuration
         run: |
-          # Run with sudo to ensure root can modify git config
-          git config --global --unset-all http.https://github.com/.extraheader || true
+          # Only attempt to remove .extraheader if it exists
+          if git config --global --get-regexp ^http.https://github.com/.extraheader; then
+            git config --global --unset-all http.https://github.com/.extraheader
+          fi
+          # Clean up other potential Git sections (if needed)
           git config --global --unset http.https://github.com/.extraheader || true
           git config --global --remove-section http.https://github.com || true
-          git config --global --list  # Check the final git config for verification
+          # Check the final git config for verification
+          git config --global --list
 
       - name: Build DWM package in Arch Linux
         run: |
