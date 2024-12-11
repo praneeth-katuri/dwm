@@ -62,6 +62,10 @@ jobs:
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
+
+            echo "Deleting associated tag: $EXISTING_RELEASE"
+            git tag -d "$EXISTING_RELEASE"
+            git push origin --delete "$EXISTING_RELEASE"
           else
             echo "No existing release found."
           fi
