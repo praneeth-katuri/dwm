@@ -54,7 +54,7 @@ jobs:
           # Upload the package file directly (not zipped)
           echo "Uploading package: $PACKAGE_FILE"
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -F "file=@$PACKAGE_FILE" \
             "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=$(basename $PACKAGE_FILE)"
