@@ -8,11 +8,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # You can change this based on your needs
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch full history to avoid shallow clone issues
+
+      - name: Remove extraheaders from git config (if any)
+        run: |
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --global --unset http.https://github.com/.extraheader || true
 
       - name: Build DWM package in Arch Linux
         run: |
@@ -37,8 +44,7 @@ jobs:
           "
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Update to v4
         with:
           name: dwm-package
           path: '*.pkg.tar.zst'
-
