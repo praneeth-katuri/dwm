@@ -55,15 +55,14 @@ jobs:
           RELEASE: ${{ env.RELEASE }}
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
-          EXISTING_RELEASE="DWM ${VERSION_NAME} Release"
-          if [ -z "$EXISTING_RELEASE" ]; then
-            echo "No existing release found."
-          else
+          EXISTING_RELEASE="DWM ${VERSION_TAG} Release"
+          if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
             git tag -d "$VERSION_TAG"
             git push --delete origin "$VERSION_TAG"
           fi
+          
       - name: Create a New Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
