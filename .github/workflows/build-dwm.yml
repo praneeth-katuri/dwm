@@ -33,7 +33,8 @@ jobs:
             pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild
+              makepkg --syncdeps --noconfirm --cleanbuild &&
+              ls -lh /workspace
             '
           "
 
