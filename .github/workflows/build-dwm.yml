@@ -43,15 +43,28 @@ jobs:
             # Build the package as a non-root user
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild
+              makepkg --syncdeps --noconfirm --cleanbuild |
+              tee build.log
+              ls -la
+              pwd
             '
           "
         continue-on-error: false  # Stop if the build fails
 
+      - name: Show build log for debugging
+        run: |
+          if [ -f build.log ]; then
+            echo "Build log:"
+            cat build.log
+          else
+            echo "No build log found!"
+          fi
+
       - name: Verify package exists
         run: |
-          # Check if the package exists
-          PACKAGE_FILE=$(find /workspace -name "*.pkg.tar.zst" | head -n 1)
+          # List all .pkg.tar.zst files in the workspace
+          echo "Looking for .pkg.tar.zst files in the workspace..."
+          PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst" | head -n 1)
           if [ -z "$PACKAGE_FILE" ]; then
             echo "Package file not found! Exiting."
             exit 1
@@ -63,7 +76,7 @@ jobs:
         id: create_release
         run: |
           VERSION=${{ env.VERSION }}-${{ env.RELEASE }}
-          gh release create "v$VERSION" "workspace/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
+          gh release create "v$VERSION" "${GITHUB_WORKSPACE}/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Authenticate GitHub CLI with the workflow token
 
