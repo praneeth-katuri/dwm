@@ -53,11 +53,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           EXISTING_RELEASE=$(gh release list --limit 1 | awk '{print $1}')
-          if [ -n "$EXISTING_RELEASE" ]; then
+          if [ -z "$EXISTING_RELEASE" ]; then
+            echo "No existing release found."
+          else
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
-          else
-            echo "No existing release found."
           fi
       - name: Create a New Release
         env:
