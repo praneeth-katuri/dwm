@@ -16,7 +16,7 @@ jobs:
       - name: Set GH_TOKEN for GitHub CLI
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          run: echo "GH_TOKEN is set."
+        run: echo "GH_TOKEN is set."
          
 
       - name: Get DWM Version and Release
