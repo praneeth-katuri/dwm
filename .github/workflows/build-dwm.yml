@@ -1,4 +1,4 @@
-kname: Build DWM Package
+name: Build DWM Package
 
 on:
   push:
