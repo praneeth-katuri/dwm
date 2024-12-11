@@ -49,6 +49,10 @@ jobs:
               makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
+
+      - name: Fix permissions
+        run: sudo chown -R $USER:$USER .
+        
       - name: Delete Old Release (if Exists)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
