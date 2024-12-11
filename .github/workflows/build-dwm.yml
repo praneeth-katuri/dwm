@@ -33,10 +33,16 @@ jobs:
             pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild && pwd &&
+              makepkg --syncdeps --noconfirm --cleanbuild &&
               ls -lh /workspace
             '
           "
+
+      - name: Save build artifact to workspace
+        run: |
+          # Move the package file to a consistent location
+          mv /workspace/dwm-*.pkg.tar.zst $GITHUB_WORKSPACE/dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst
+        # The package is now available in GITHUB_WORKSPACE for later steps
 
       - name: Get Existing Release (if any)
         id: existing_release
@@ -72,13 +78,13 @@ jobs:
       - name: Upload package to GitHub release
         run: |
           # Check if the package exists before attempting upload
-          PACKAGE_FILE=$(find /workspace -name "dwm-*.pkg.tar.zst" -print -quit)
-          if [ -n "$PACKAGE_FILE" ]; then
+          PACKAGE_FILE="$GITHUB_WORKSPACE/dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
+          if [ -f "$PACKAGE_FILE" ]; then
             curl -X POST \
               -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
               -H "Content-Type: application/octet-stream" \
-              --data-binary @/workspace/dwm-${{ env.VERSION }}-${{ env.RELEASE }}-x86_64.pkg.tar.zst \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
+              --data-binary @"$PACKAGE_FILE" \
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=$(basename $PACKAGE_FILE)"
           else
             echo "Package file not found!"
             exit 1
