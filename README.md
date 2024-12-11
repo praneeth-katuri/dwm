@@ -9,6 +9,7 @@ This is a custom build of DWM (Dynamic Window Manager) tailored to my personal p
 
 - **Custom Patches**: Includes various patches that add additional functionality to DWM. The following patches are applied:
 
+|         |         |         |         |         |
 |---------|---------|---------|---------|---------|
 | `barpadding`        | `bottomstack`       | `cfacts`          | `dragmfact`       | `dragcfact`       |
 | `fibonacci`         | `gaplessgrid`       | `horizgrid`       | `movestack`       | `vanity gaps`     |
