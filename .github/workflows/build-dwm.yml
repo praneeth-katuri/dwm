@@ -53,8 +53,9 @@ jobs:
       - name: Create a New Release
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
+          PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst" | head -n 1)
           echo "Creating release: $VERSION_TAG"
-          gh release create "$VERSION_TAG" /workspace/*.pkg.tar.zst \
+          gh release create "$VERSION_TAG" "$PACKAGE_FILE" \
             --title "$VERSION_TAG" \
             --notes "Release for DWM $VERSION_TAG"
 
