@@ -1,48 +1,43 @@
-dwm - dynamic window manager
-============================
-dwm is an extremely fast, small, and dynamic window manager for X.
+# Custom DWM Build
 
+![DWM Screenshot-1](images/Screenshot-1.png)
+![DWM Screenshot-2](images/Screenshot-2.png)
 
-Requirements
-------------
-In order to build dwm you need the Xlib header files.
+This is a custom build of DWM (Dynamic Window Manager) tailored to my personal preferences and workflow. The goal of this repository is to provide a streamlined and efficient version of DWM with additional features and configurations that suit my needs.
 
+## Features
 
-Installation
-------------
-Edit config.mk to match your local setup (dwm is installed into
-the /usr/local namespace by default).
+- **Custom Patches**: Includes various patches that add additional functionality to DWM. The following patches are applied:
 
-Afterwards enter the following command to build and install dwm (if
-necessary as root):
+| `barpadding`        | `bottomstack`       | `cfacts`          | `dragmfact`       | `dragcfact`       |
+|---------------------|---------------------|-------------------|-------------------|-------------------|
+| `fibonacci`         | `gaplessgrid`       | `horizgrid`       | `movestack`       | `vanity gaps`     |
+|---------------------|---------------------|-------------------|-------------------|-------------------|
+| `colorful tags`     | `statuspadding`     | `status2d`        | `underline tags`  | `notitle`         |
+|---------------------|---------------------|-------------------|-------------------|-------------------|
+| `winicon`           | `preserveonrestart` | `shiftview`       |                   |                   |
 
-    make clean install
+## Installation
 
+### Arch Linux and Arch-based Distros (via pre-built release package)
 
-Running dwm
------------
-Add the following line to your .xinitrc to start dwm using startx:
+If you're using Arch Linux or an Arch-based distro, you can easily install this custom DWM build using the pre-built release package provided in the GitHub releases.
 
-    exec dwm
+1. **Download the Latest Release**
 
-In order to connect dwm to a specific display, make sure that
-the DISPLAY environment variable is set correctly, e.g.:
+   Go to the [releases page](https://github.com/praneeth-katuri/dwm/releases) and download the latest `.tar.zst` package.
 
-    DISPLAY=foo.bar:1 exec dwm
+2. **Install the Package**
 
-(This will start dwm on display :1 of the host foo.bar.)
+   Once you've downloaded the release package, you can install it using the following command:
 
-In order to display status info in the bar, you can do something
-like this in your .xinitrc:
+   ```bash
+   sudo pacman -U /path/to/dwm-release-package.tar.zst
 
-    while xsetroot -name "`date` `uptime | sed 's/.*,//'`"
-    do
-    	sleep 1
-    done &
-    exec dwm
+## License
 
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more information.
 
-Configuration
--------------
-The configuration of dwm is done by creating a custom config.h
-and (re)compiling the source code.
+## Contributions
+
+Contributions are welcome! If you'd like to contribute to this project.
