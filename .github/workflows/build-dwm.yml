@@ -14,6 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Get DWM Version and Release
+        id: get_version
+        run: |
+          VERSION=$(grep 'pkgver=' PKGBUILD | cut -d'=' -f2)
+          REL=$(grep 'pkgrel=' PKGBUILD | cut -d'=' -f2)
+          echo "DWM version is $VERSION, release is $REL"
+          echo "::set-output name=version::$VERSION"
+          echo "::set-output name=release::$REL"
+
       - name: Build DWM package in Arch Linux
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace archlinux:base-devel bash -c "
@@ -39,5 +48,5 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dwm-package
+          name: dwm-package-${{ steps.get_version.outputs.version }}-${{ steps.get_version.outputs.release }}  # Dynamic version and release from PKGBUILD
           path: '*.pkg.tar.zst'
