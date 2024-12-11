@@ -46,15 +46,23 @@ jobs:
               makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
+
+      - name: Create GitHub release
+        id: create_release
+        run: |
+          VERSION=${{ env.VERSION }}-${{ env.RELEASE }}
+          RELEASE=$(gh release create "v$VERSION" "${GITHUB_WORKSPACE}/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION")
+          echo "Release created with version $VERSION"
+
       - name: Upload package artifact without zipping
         run: |
           # Find the package file by using the exact pattern
-          PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst")
+          PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst" | head -n 1)  # Capture the file
           
-          # Upload the package file directly (not zipped)
+          # Upload the package file as an asset to the release
           echo "Uploading package: $PACKAGE_FILE"
           curl -X POST \
             -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -F "file=@$PACKAGE_FILE" \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=$(basename $PACKAGE_FILE)"
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/$(gh release view "v${{ env.VERSION }}-${{ env.RELEASE }}" --json id -q .id)/assets?name=$(basename $PACKAGE_FILE)"
