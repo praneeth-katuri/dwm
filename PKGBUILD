@@ -12,19 +12,19 @@ source=("git+https://github.com/praneeth-katuri/dwm.git#branch=main")
 sha256sums=('SKIP')
 
 prepare() {
-    cd "${srcdir}/dwm"
+    cd "${srcdir}/${pkgname}"
     cp config.def.h config.h
 }
 
 build() {
-    cd "${srcdir}/dwm"
+    cd "${srcdir}/${pkgname}"
     make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
 }
 
 package() {
-    cd "${srcdir}/dwm"
+    cd "${srcdir}/${pkgname}"
     make PREFIX=/usr DESTDIR="$pkgdir" install
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
     install -Dm644 README "$pkgdir/usr/share/doc/$pkgname/README"
-
+    install -Dm644 dwm.desktop "$pkgdir/usr/share/xsessions/dwm.desktop"
 }
