@@ -55,7 +55,7 @@ jobs:
           RELEASE: ${{ env.RELEASE }}
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
-          EXISTING_RELEASE="DWM ${VERSION_TAG} Release"
+          EXISTING_RELEASE="${VERSION_TAG}"
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
