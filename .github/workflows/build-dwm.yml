@@ -52,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          EXISTING_RELEASE=$(gh release list --limit 1 | awk '{print $1}')
+          EXISTING_RELEASE="$(gh release list --limit 1 | awk '{print $1}')"
           if [ -z "$EXISTING_RELEASE" ]; then
             echo "No existing release found."
           else
