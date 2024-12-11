@@ -43,22 +43,15 @@ jobs:
             # Build the package as a non-root user
             sudo -u builder bash -c '
               cd /workspace &&
-              makepkg --syncdeps --noconfirm --cleanbuild |
-              tee build.log
-              ls -la
-              pwd
+              makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
-        continue-on-error: false  # Stop if the build fails
 
-      - name: Show build log for debugging
+      - name: List files in workspace
         run: |
-          if [ -f build.log ]; then
-            echo "Build log:"
-            cat build.log
-          else
-            echo "No build log found!"
-          fi
+          # List the contents of the workspace to ensure the package is there
+          echo "Listing files in the workspace to find .pkg.tar.zst"
+          ls -l $GITHUB_WORKSPACE
 
       - name: Verify package exists
         run: |
@@ -78,7 +71,7 @@ jobs:
           VERSION=${{ env.VERSION }}-${{ env.RELEASE }}
           gh release create "v$VERSION" "${GITHUB_WORKSPACE}/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Authenticate GitHub CLI with the workflow token
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authenticate GitHub CLI with the workflow token
 
       - name: Upload package artifact without zipping
         run: |
@@ -91,7 +84,7 @@ jobs:
 
           echo "Uploading package: $PACKAGE_FILE"
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -F "file=@$PACKAGE_FILE" \
             "https://uploads.github.com/repos/${{ github.repository }}/releases/$(gh release view "v${{ env.VERSION }}-${{ env.RELEASE }}" --json id -q .id)/assets?name=$(basename $PACKAGE_FILE)"
