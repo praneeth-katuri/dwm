@@ -71,11 +71,7 @@ jobs:
           
           gh release create "$VERSION_TAG" "$PACKAGE_FILE" \
             --title "DWM $VERSION_TAG Release" \
-            --notes |
-              cat <<EOF
-              ## DWM $VERSION_TAG Release Notes
+            --notes "## DWM $VERSION_TAG Release Notes
       
-              - New features and improvements
-              - Fixed minor bugs
-      
-              EOF
+          - New features and improvements
+          - Fixed minor bugs"
