@@ -16,17 +16,13 @@ jobs:
         with:
           fetch-depth: 0  # Fetch full history to avoid shallow clone issues
 
-      - name: Fix git config file permissions
-        run: |
-          sudo chown -R $USER:$USER .git
-          
       - name: Clean up Git configuration
         run: |
           # Run with sudo to ensure root can modify git config
-          git config --global --unset-all http.https://github.com/.extraheader || true
-          git config --global --unset http.https://github.com/.extraheader || true
-          git config --global --remove-section http.https://github.com || true
-          git config --global --list  # Check the final git config for verification
+          sudo git config --global --unset-all http.https://github.com/.extraheader || true
+          sudo git config --global --unset http.https://github.com/.extraheader || true
+          sudo git config --global --remove-section http.https://github.com || true
+          sudo git config --global --list  # Check the final git config for verification
 
       - name: Build DWM package in Arch Linux
         run: |
