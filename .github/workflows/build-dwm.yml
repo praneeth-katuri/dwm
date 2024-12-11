@@ -13,6 +13,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set GH_TOKEN for GitHub CLI
+        run: echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+
       - name: Get DWM Version and Release
         id: get_version
         run: |
@@ -54,3 +57,4 @@ jobs:
           gh release create "$VERSION_TAG" /workspace/*.pkg.tar.zst \
             --title "$VERSION_TAG" \
             --notes "Release for DWM $VERSION_TAG"
+
