@@ -51,7 +51,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          EXISTING_RELEASE=$(gh release list --limit 1 --json tag_name -q '.[0].tag_name')
+          EXISTING_RELEASE=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
