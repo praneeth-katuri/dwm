@@ -28,7 +28,7 @@ jobs:
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
         env:
           GITHUB_ENV: $GITHUB_ENV
-          
+
       - name: Build DWM package in Arch Linux
         env:
           VERSION: ${{ env.VERSION }}
@@ -47,25 +47,17 @@ jobs:
               makepkg --syncdeps --noconfirm --cleanbuild
             '
           "
-
       - name: Delete Old Release (if Exists)
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          VERSION: ${{ env.VERSION }}
-          RELEASE: ${{ env.RELEASE }}
         run: |
-          VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
-          EXISTING_RELEASE="${VERSION_TAG}"
+          EXISTING_RELEASE=$(gh release list --limit 1 | awk '{print $1}')
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
-            git tag
-            echo "Hi"
-            git ls-remote --tags origin
-            git tag -d "$VERSION_TAG"
-            git push --delete origin "$VERSION_TAG"
+          else
+            echo "No existing release found."
           fi
-          
       - name: Create a New Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
