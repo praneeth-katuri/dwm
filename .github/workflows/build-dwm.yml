@@ -8,31 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # You can change this based on your needs
+    runs-on: ubuntu-22.04  # Change this to ubuntu-24.04 when it's available
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch full history to avoid shallow clone issues
-
-      - name: Fix permissions for .git/config
-        run: |
-          # Ensure correct ownership for the repository files and .git directory
-          sudo chown -R $USER:$USER .git
-          sudo chmod -R u+rw .git  # Ensure the user has read/write permissions on .git/config
-
-      - name: Clean up Git configuration
-        run: |
-          # Only attempt to remove .extraheader if it exists
-          if git config --global --get-regexp ^http.https://github.com/.extraheader; then
-            git config --global --unset-all http.https://github.com/.extraheader
-          fi
-          # Clean up other potential Git sections (if needed)
-          git config --global --unset http.https://github.com/.extraheader || true
-          git config --global --remove-section http.https://github.com || true
-          # Check the final git config for verification
-          git config --global --list
 
       - name: Build DWM package in Arch Linux
         run: |
@@ -41,14 +21,14 @@ jobs:
             useradd -m builder &&
             passwd -d builder &&
             echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers &&
-            
+
             # Fix permissions to allow builder user to write to /workspace
             chown -R builder:builder /workspace &&
-            
+
             # Update system as root
             pacman -Syu --noconfirm &&
             pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
-            
+
             # Build the package as a non-root user
             sudo -u builder bash -c '
               cd /workspace &&
@@ -57,7 +37,7 @@ jobs:
           "
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v4  # Update to v4
+        uses: actions/upload-artifact@v4
         with:
           name: dwm-package
           path: '*.pkg.tar.zst'
