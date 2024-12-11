@@ -17,7 +17,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: echo "GH_TOKEN is set."
-         
 
       - name: Get DWM Version and Release
         id: get_version
@@ -27,10 +26,24 @@ jobs:
           echo "DWM version is $VERSION, release is $RELEASE"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+        env:
+          GITHUB_ENV: $GITHUB_ENV
+
+      - name: Validate PKGBUILD
+        run: |
+          makepkg --printsrcinfo > .SRCINFO
+          if ! diff .SRCINFO PKGBUILD; then
+            echo "PKGBUILD validation failed"
+            exit 1
+          fi
 
       - name: Build DWM package in Arch Linux
+        env:
+          VERSION: ${{ env.VERSION }}
+          RELEASE: ${{ env.RELEASE }}
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace archlinux:base-devel bash -c "
+            set -e
             useradd -m builder &&
             passwd -d builder &&
             echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers &&
@@ -43,7 +56,15 @@ jobs:
             '
           "
 
+      - name: Upload Built Package
+        uses: actions/upload-artifact@v3
+        with:
+          name: DWM-Package
+          path: "*.pkg.tar.zst"
+
       - name: Delete Old Release (if Exists)
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           EXISTING_RELEASE=$(gh release list --limit 1 | awk '{print $1}')
           if [ -n "$EXISTING_RELEASE" ]; then
@@ -54,6 +75,10 @@ jobs:
           fi
 
       - name: Create a New Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+          RELEASE: ${{ env.RELEASE }}
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
           PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst" | head -n 1)
@@ -61,4 +86,3 @@ jobs:
           gh release create "$VERSION_TAG" "$PACKAGE_FILE" \
             --title "$VERSION_TAG" \
             --notes "Release for DWM $VERSION_TAG"
-
