@@ -20,8 +20,8 @@ jobs:
           VERSION=$(grep 'pkgver=' PKGBUILD | cut -d'=' -f2)
           REL=$(grep 'pkgrel=' PKGBUILD | cut -d'=' -f2)
           echo "DWM version is $VERSION, release is $REL"
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=release::$REL"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE=$REL" >> $GITHUB_ENV
 
       - name: Build DWM package in Arch Linux
         run: |
@@ -48,5 +48,6 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dwm-package-${{ steps.get_version.outputs.version }}-${{ steps.get_version.outputs.release }}  # Dynamic version and release from PKGBUILD
+          name: dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}  # Dynamic version and release from environment variables
           path: '*.pkg.tar.zst'
+          compression-level: 0
