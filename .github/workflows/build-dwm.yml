@@ -1,0 +1,43 @@
+name: Build Arch Package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-package:
+    name: Build Arch Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y archlinux-keyring devscripts git fakeroot make wget tar
+
+      - name: Set up Arch container
+        uses: archlinux/archlinux-docker@v2
+        with:
+          arch: x86_64
+          pacman-mirrorlist: |
+            Server = https://mirror.rackspace.com/archlinux/$repo/os/$arch
+          packages: base-devel git libx11 libxft libxinerama imlib2 freetype2
+
+      - name: Build PKGBUILD
+        run: |
+          mkdir -p build
+          cp PKGBUILD build/
+          cd build
+          makepkg --syncdeps --noconfirm --cleanbuild
+          ls *.pkg.tar.zst > package_name.txt
+
+      - name: Upload package artifact with version
+        uses: actions/upload-artifact@v3
+        with:
+          name: dwm-$(cat build/package_name.txt | cut -d'-' -f2-).pkg.tar.zst
+          path: build/*.pkg.tar.zst
