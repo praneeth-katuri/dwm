@@ -59,7 +59,7 @@ jobs:
         run: |
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"tag_name": "'"${VERSION_TAG}"'", "name": "'"${VERSION_TAG}"'", "body": "Release for DWM ${VERSION_TAG}"}' \
             https://api.github.com/repos/${{ github.repository }}/releases
@@ -68,7 +68,7 @@ jobs:
         run: |
           # Upload the package artifact (tar.zst file)
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @/workspace/*.pkg.tar.zst \
             "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
