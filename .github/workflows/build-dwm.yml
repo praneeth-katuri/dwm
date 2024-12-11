@@ -1,4 +1,4 @@
-name: Build DWM Package
+kname: Build DWM Package
 
 on:
   push:
@@ -16,10 +16,13 @@ jobs:
         with:
           fetch-depth: 0  # Fetch full history to avoid shallow clone issues
 
-      - name: Remove extraheaders from git config (if any)
+      - name: Clean up Git configuration
         run: |
+          # Remove any problematic extra headers or unwanted configurations
           git config --global --unset-all http.https://github.com/.extraheader || true
           git config --global --unset http.https://github.com/.extraheader || true
+          git config --global --remove-section http.https://github.com || true
+          git config --global --list  # Check the final git config for verification
 
       - name: Build DWM package in Arch Linux
         run: |
@@ -48,3 +51,4 @@ jobs:
         with:
           name: dwm-package
           path: '*.pkg.tar.zst'
+
