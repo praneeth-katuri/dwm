@@ -51,7 +51,7 @@ jobs:
       - name: Verify package exists
         run: |
           # Check if the package exists
-          PACKAGE_FILE=$(find $GITHUB_WORKSPACE -name "*.pkg.tar.zst" | head -n 1)
+          PACKAGE_FILE=$(find /workspace -name "*.pkg.tar.zst" | head -n 1)
           if [ -z "$PACKAGE_FILE" ]; then
             echo "Package file not found! Exiting."
             exit 1
@@ -63,9 +63,9 @@ jobs:
         id: create_release
         run: |
           VERSION=${{ env.VERSION }}-${{ env.RELEASE }}
-          gh release create "v$VERSION" "${GITHUB_WORKSPACE}/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
+          gh release create "v$VERSION" "workspace/*.pkg.tar.zst" --title "DWM $VERSION" --notes "Release of DWM $VERSION"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authenticate GitHub CLI with the workflow token
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Authenticate GitHub CLI with the workflow token
 
       - name: Upload package artifact without zipping
         run: |
@@ -78,7 +78,7 @@ jobs:
 
           echo "Uploading package: $PACKAGE_FILE"
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -F "file=@$PACKAGE_FILE" \
             "https://uploads.github.com/repos/${{ github.repository }}/releases/$(gh release view "v${{ env.VERSION }}-${{ env.RELEASE }}" --json id -q .id)/assets?name=$(basename $PACKAGE_FILE)"
