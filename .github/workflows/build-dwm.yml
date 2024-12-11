@@ -54,8 +54,8 @@ jobs:
           VERSION: ${{ env.VERSION }}
           RELEASE: ${{ env.RELEASE }}
         run: |
-          EXISTING_RELEASE=$(gh release list --limit 1 | grep -o '"[^"]*"' | tr -d '"')
           VERSION_TAG="v${{ env.VERSION }}-${{ env.RELEASE }}"
+          EXISTING_RELEASE="DWM ${VERSION_NAME} Release"
           if [ -z "$EXISTING_RELEASE" ]; then
             echo "No existing release found."
           else
