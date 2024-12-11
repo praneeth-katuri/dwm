@@ -51,10 +51,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          EXISTING_RELEASE=$(gh release list --limit 1 | awk '{print $1}')
+          EXISTING_RELEASE=$(gh release list --limit 1 --json tag_name -q '.[0].tag_name')
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
+            git tag -d "$EXISTING_RELEASE"
+            git push --delete origin "$EXISTING_RELEASE"
           else
             echo "No existing release found."
           fi
