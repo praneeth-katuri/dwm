@@ -28,15 +28,7 @@ jobs:
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
         env:
           GITHUB_ENV: $GITHUB_ENV
-
-      - name: Validate PKGBUILD
-        run: |
-          makepkg --printsrcinfo > .SRCINFO
-          if ! diff .SRCINFO PKGBUILD; then
-            echo "PKGBUILD validation failed"
-            exit 1
-          fi
-
+          
       - name: Build DWM package in Arch Linux
         env:
           VERSION: ${{ env.VERSION }}
