@@ -14,15 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build DWM package
+      - name: Build DWM package in Arch Linux
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace archlinux:base-devel bash -c "
-            pacman -Syu --noconfirm &&
-            pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
-            makepkg --syncdeps --noconfirm --cleanbuild
+            useradd -m builder &&
+            passwd -d builder &&
+            echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers &&
+            sudo -u builder bash -c '
+              cd /workspace &&
+              pacman -Syu --noconfirm &&
+              pacman -S --noconfirm libx11 libxft libxinerama imlib2 freetype2 git &&
+              makepkg --syncdeps --noconfirm --cleanbuild
+            '
           "
 
       - name: Upload package artifact
