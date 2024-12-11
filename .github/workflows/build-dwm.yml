@@ -48,7 +48,7 @@ jobs:
           echo "EXISTING_RELEASE_ID=$EXISTING_RELEASE_ID" >> $GITHUB_ENV
 
       - name: Delete Old Release if Exists
-        if: env.EXISTING_RELEASE_ID != "null"
+        if: ${{ env.EXISTING_RELEASE_ID != 'null' && env.EXISTING_RELEASE_ID != '' }}
         run: |
           curl -X DELETE \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -70,4 +70,4 @@ jobs:
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @/workspace/*.pkg.tar.zst \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=dwm-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=dwm-package-${{ env.VERSION }}-${{ env.RELEASE }}.pkg.tar.zst"
