@@ -14,7 +14,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set GH_TOKEN for GitHub CLI
-        run: echo "GH_TOKEN=${{ secrets.GH_TOKEN }}" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          run: echo "GH_TOKEN is set."
+         
 
       - name: Get DWM Version and Release
         id: get_version
