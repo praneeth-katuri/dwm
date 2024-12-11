@@ -63,6 +63,8 @@ jobs:
             echo "Deleting existing release: $EXISTING_RELEASE"
             gh release delete "$EXISTING_RELEASE" --yes
 
+            git fetch --tags
+
             echo "Deleting associated tag: $EXISTING_RELEASE"
             git tag -d "$EXISTING_RELEASE"
             git push origin --delete "$EXISTING_RELEASE"
